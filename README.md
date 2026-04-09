@@ -64,18 +64,18 @@ The primary dependencies are:
 To run the command‑line interface and generate a simplified (merged) score:
 
 ```bash
-python -m micscore.app --input /path/to/score.pdf --output simplified.pdf --pages 2
+python3 -m micscore --input /path/to/score.pdf --output simplified.pdf --pages 2 --dark-mode
 ```
 
 * `--input` specifies the path to the source PDF.
 * `--output` is the path where the generated PDF will be written.
 * `--pages` sets the maximum number of pages in the output (default: 2).
+* `--dark-mode` (optional) generates a dark-themed PDF with inverted colors.
 
 The program converts each page of the input into an image, crops margins,
-scales the pages to fit the target page count, and merges them.  The
-resulting PDF will contain exactly the requested number of pages unless the
-input already has fewer pages, in which case the original pages are copied
-unchanged.
+scales the pages to fit the target page count, and merges them. The
+resulting PDF will contain exactly the requested number of pages, splitting
+images across pages if necessary to maximize readability and fit.
 
 ## Project structure
 
