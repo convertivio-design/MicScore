@@ -25,6 +25,7 @@ def main(args: Any = None) -> None:
     parser.add_argument("--pages", "-p", type=int, default=2, help="Maximum number of pages in output (default: 2)")
     parser.add_argument("--dpi", type=int, default=200, help="DPI for PDF rendering (default: 200)")
     parser.add_argument("--no-crop", action="store_true", help="Disable margin cropping")
+    parser.add_argument("--dark-mode", action="store_true", help="Use a dark theme for the output PDF")
     parser.add_argument("--difficulty", choices=["easy", "intermediate", "advanced"], default="intermediate",
                         help="Target difficulty level (currently unused)")
     parser.add_argument("--preserve_style", choices=["strict", "moderate", "loose"], default="moderate",
@@ -37,8 +38,17 @@ def main(args: Any = None) -> None:
     output_path = Path(args_ns.output)
     max_pages = args_ns.pages
 
+    # Minimalist CLI design using ANSI escape codes
+    # Use dark gray/muted tones for the UI
+    RESET = "\033[0m"
+    DIM = "\033[2m"
+    CYAN = "\033[36m"
+    GRAY = "\033[90m"
+
+    print(f"\n{GRAY}MicScore{RESET} {DIM}v0.1.0{RESET}\n")
+
     # Step 1: parse PDF into images
-    print(f"[MicScore] Converting {input_path} to images...")
+    print(f"{DIM}→ {RESET}Converting {CYAN}{input_path.name}{RESET}...")
     pages = parse_pdf(str(input_path), dpi=args_ns.dpi, crop=not args_ns.no_crop)
 
     # Step 2: simplify the score (no‑op for now)
@@ -51,13 +61,14 @@ def main(args: Any = None) -> None:
     simplified_pages = simplify_score(pages, **simplify_options)
 
     # Step 3: optimise layout to fit target number of pages
-    print(f"[MicScore] Merging pages into {max_pages} page(s)...")
-    merged_pages = optimize_layout(simplified_pages, max_pages=max_pages)
+    print(f"{DIM}→ {RESET}Merging into {CYAN}{max_pages}{RESET} page(s)...")
+    merged_pages = optimize_layout(simplified_pages, max_pages=max_pages, dark_mode=args_ns.dark_mode)
 
     # Step 4: save as PDF
-    print(f"[MicScore] Saving output to {output_path}...")
     if not merged_pages:
         raise RuntimeError("No pages produced by layout optimiser")
+
+    print(f"{DIM}→ {RESET}Saving to {CYAN}{output_path.name}{RESET}...")
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -65,7 +76,7 @@ def main(args: Any = None) -> None:
     first_page: Image.Image = merged_pages[0]
     other_pages = merged_pages[1:]
     first_page.save(str(output_path), save_all=True, append_images=other_pages)
-    print("[MicScore] Done.")
+    print(f"\n{GRAY}Done.{RESET}\n")
 
 
 if __name__ == "__main__":  # pragma: no cover
